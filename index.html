@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Blokada: strona nie może niczego wysłać poza własny adres, nie ładuje obcych skryptów -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#094d47">
+  <title>Kompas, RM Nieruchomości</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="header-left">
+      <img src="logo.png" alt="RM Nieruchomości" class="header-logo">
+      <div class="subtitle">Kompas</div>
+    </div>
+    <div class="header-right">
+      <span class="wersja" data-wersja=""></span>
+      <button class="icon-btn" id="ustawienia-btn" aria-label="Ustawienia">⚙️</button>
+    </div>
+  </header>
+
+  <main class="screen">
+    <div class="aktualizacja" id="aktualizacja" hidden>
+      <span>Jest nowa wersja kompasu.</span>
+      <button class="btn-primary" id="aktualizacja-btn">Odśwież</button>
+    </div>
+
+    <!-- START: włączenie czujnika -->
+    <div class="karta start" id="start">
+      <p><b>Stań przy oknie twarzą do szyby.</b> Telefon trzymaj płasko, górną krawędzią w stronę okna.</p>
+      <button class="btn-primary wide" id="wlacz-btn">🧭 Włącz kompas</button>
+      <p class="hint centr" id="start-info"></p>
+    </div>
+
+    <!-- TARCZA -->
+    <div class="tarcza-box">
+      <svg id="tarcza" viewBox="-160 -160 320 320" aria-hidden="true">
+        <g id="obrot">
+          <circle r="150" class="t-kolo"></circle>
+          <circle r="118" class="t-kolo-w"></circle>
+          <g id="kreski"></g>
+          <g id="slonce-teraz" hidden>
+            <circle r="11" class="t-slonce"></circle>
+          </g>
+        </g>
+        <polygon points="0,-158 -13,-132 13,-132" class="t-wskaznik"></polygon>
+        <line x1="0" y1="-128" x2="0" y2="0" class="t-linia"></line>
+        <circle r="5" class="t-srodek"></circle>
+      </svg>
+    </div>
+
+    <div class="odczyt">
+      <div class="etykieta centr">Okno wychodzi na</div>
+      <div class="kierunek" id="kierunek">…</div>
+      <div class="stopnie" id="stopnie"></div>
+      <div class="ostrzezenie" id="plasko" hidden>Trzymaj telefon płasko, inaczej odczyt jest niepewny.</div>
+    </div>
+
+    <div class="sterowanie">
+      <button class="btn" id="zamroz-btn">⏸ Zatrzymaj odczyt</button>
+      <button class="btn" id="recznie-btn">✋ Ustaw ręcznie</button>
+    </div>
+
+    <div class="karta" id="recznie" hidden>
+      <div class="etykieta">Wybierz kierunek okna</div>
+      <div class="chips" id="kierunki-chips"></div>
+      <input type="range" min="0" max="359" step="1" value="180" id="suwak" aria-label="Kierunek w stopniach">
+      <p class="hint">Przydaje się przy rzucie mieszkania albo na komputerze, który nie ma kompasu.</p>
+    </div>
+
+    <!-- SŁOŃCE -->
+    <section class="karta">
+      <h2>☀️ Słońce w tym oknie</h2>
+      <p class="podsumowanie" id="slonce-podsum"></p>
+      <div class="pory" id="pory"></div>
+      <div id="sezony"></div>
+      <div class="os" aria-hidden="true"><span>4:00</span><span>8:00</span><span>12:00</span><span>16:00</span><span>20:00</span></div>
+      <div class="wt" id="wt"></div>
+      <p class="hint">Godziny liczone dla nieba bez przeszkód. Sąsiedni blok, drzewa albo balkon nad oknem skracają czas słońca.</p>
+    </section>
+
+    <!-- POMIESZCZENIA -->
+    <section class="karta">
+      <h2>🛋️ Co tu najlepiej pasuje</h2>
+      <div id="pokoje"></div>
+    </section>
+
+    <!-- ZDANIE DO OFERTY -->
+    <section class="karta">
+      <h2>✍️ Zdanie do opisu oferty</h2>
+      <p class="zdanie" id="zdanie"></p>
+      <button class="btn wide" id="kopiuj-zdanie">Kopiuj zdanie</button>
+    </section>
+
+    <!-- POMIARY -->
+    <section class="karta">
+      <h2>📋 Pomiary w mieszkaniu</h2>
+      <div class="chips" id="nazwy-chips"></div>
+      <div class="wiersz">
+        <input type="text" id="nazwa" placeholder="Nazwa pomieszczenia" maxlength="40">
+        <button class="btn-primary" id="zapisz-btn">Zapisz</button>
+      </div>
+      <ul class="lista" id="lista"></ul>
+      <div class="wiersz" id="lista-akcje" hidden>
+        <button class="btn" id="kopiuj-liste">Kopiuj podsumowanie</button>
+        <button class="btn danger" id="wyczysc-btn">Wyczyść</button>
+      </div>
+    </section>
+
+    <!-- USTAWIENIA -->
+    <section class="karta" id="ustawienia" hidden>
+      <h2>⚙️ Ustawienia</h2>
+      <div class="etykieta">Lokalizacja do liczenia słońca</div>
+      <p id="lokalizacja-info"></p>
+      <div class="wiersz">
+        <button class="btn" id="gps-btn">📍 Użyj mojej lokalizacji</button>
+        <button class="btn" id="elblag-btn">Elbląg</button>
+      </div>
+      <div class="etykieta">Poprawka kompasu (deklinacja)</div>
+      <div class="wiersz">
+        <input type="number" id="deklinacja" min="-20" max="20" step="0.5">
+        <span class="hint">stopni. Kompas w telefonie wskazuje biegun magnetyczny. W Polsce różnica to kilka stopni na wschód, domyślnie 6.</span>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="app.js?v=1"></script>
+</body>
+</html>
